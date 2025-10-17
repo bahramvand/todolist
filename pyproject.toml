@@ -1,0 +1,10 @@
+[tool.poetry]
+name = "todolist"
+version = "0.1.0"
+description = "Built with ❤️ and code."
+authors = ["lordsedler1@gmail.com"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-dotenv = "^1.0.1"
