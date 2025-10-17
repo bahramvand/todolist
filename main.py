@@ -2,7 +2,7 @@ from core.managers import ProjectManager, TaskManager
 
 def main():
     project_manager = ProjectManager()
-    task_manager = TaskManager()
+    task_manager = TaskManager(project_manager)
 
     while True:
         print("\n=== ToDoList CLI ===")
@@ -15,7 +15,8 @@ def main():
         print("7.  Edit task")
         print("8.  Change task status")
         print("9.  Delete task")
-        print("10. Exit")
+        print("10. List all projects with tasks")
+        print("11. Exit")
 
         choice = input("Select an option: ").strip()
 
@@ -48,7 +49,7 @@ def main():
         elif choice == "4":
             pid = input("Enter project ID to delete: ")
             try:
-                project_manager.delete_project(pid)
+                project_manager.delete_project(pid, task_manager)
             except Exception as e:
                 print(f"Error: {e}")
 
@@ -103,6 +104,12 @@ def main():
                 print(f"Error: {e}")
 
         elif choice == "10":
+            try:
+                project_manager.list_projects_with_tasks(task_manager)
+            except Exception as e:
+                print(f"Error: {e}")
+        
+        elif choice == "11":
             print("Goodbye!")
             break
 

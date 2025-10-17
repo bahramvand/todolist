@@ -18,13 +18,33 @@ class ProjectManager:
         print(f"Project '{project.name}' created successfully.")
         return project
 
+    def _get_all_projects(self):
+        return self.repo.get_all()
+
     def list_projects(self):
-        projects = self.repo.get_all()
+        projects = self._get_all_projects()
         if not projects:
             print("No projects found.")
             return
         rows = [(p.id, p.name, p.description[:30]) for p in sorted(projects, key=lambda x: x.created_at)]
         print_table(rows, ["ID", "Name", "Description"])
+
+    def list_projects_with_tasks(self, task_manager: 'TaskManager'):
+        projects = self._get_all_projects() 
+        if not projects:
+            print("No projects found.")
+            return
+
+        for project in sorted(projects, key=lambda x: x.created_at):
+            print(f"\n[{project.id[:8]}] {project.name}: {project.description[:50]}...")
+            tasks = task_manager.repo.get_tasks_by_project(project.id)
+            if not tasks:
+                print("  No tasks found for this project.")
+            else:
+                for t in tasks:
+                    deadline = t.deadline.strftime("%Y-%m-%d") if t.deadline else "-"
+                    print(f"  - [{t.id[:8]}] {t.title[:30]} ({t.status}) - Deadline: {deadline}")
+
 
     def edit_project(self, project_id: str, new_name: str, new_description: str):
         project = self.repo.get_by_id(project_id)
@@ -42,19 +62,27 @@ class ProjectManager:
         print(f"Project '{project_id}' updated successfully.")
         return project
 
-    def delete_project(self, project_id: str):
+    def delete_project(self, project_id: str, task_manager: 'TaskManager'):
         self.repo.delete(project_id)
-        TaskManager().repo.delete_all_by_project(project_id)
+        task_manager.repo.delete_all_by_project(project_id)
         print(f"Project '{project_id}' and all its tasks deleted successfully.")
-
+    
+    def validate_project_exists(self, project_id: str):
+        try:
+            self.repo.get_by_id(project_id)
+        except NotFoundError:
+            raise ValidationError(f"Project with ID '{project_id}' does not exist.")    
+    
 class TaskManager:
     """Manages tasks inside projects."""
 
-    def __init__(self):
+    def __init__(self, project_manager: ProjectManager):
         self.repo = TaskRepository()
-
-    def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
+        self.project_manager = project_manager  
         
+    def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
+        self.project_manager.validate_project_exists(project_id)
+
         task = Task(title, description, status, deadline)
         self.repo.add_task(project_id, task)
         print(f"Task '{task.title}' added successfully to project '{project_id}'.")
