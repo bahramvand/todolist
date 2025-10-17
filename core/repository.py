@@ -55,3 +55,28 @@ class TaskRepository:
     def delete_all_by_project(self, project_id: str):
         if project_id in self._tasks:
             del self._tasks[project_id]
+    
+    def get_task(self, project_id: str, task_id: str):
+        tasks = self._tasks.get(project_id, [])
+        for task in tasks:
+            if task.id == task_id:
+                return task
+        raise NotFoundError(f"Task with ID '{task_id}' not found in project '{project_id}'.")
+
+    def delete_task(self, project_id: str, task_id: str):
+        if project_id not in self._tasks:
+            raise NotFoundError(f"No tasks found for project '{project_id}'.")
+        for i, task in enumerate(self._tasks[project_id]):
+            if task.id == task_id:
+                del self._tasks[project_id][i]
+                return
+        raise NotFoundError(f"Task with ID '{task_id}' not found in project '{project_id}'.")
+
+    def update_task(self, project_id: str, updated_task):
+        if project_id not in self._tasks:
+            raise NotFoundError(f"No tasks found for project '{project_id}'.")
+        for i, task in enumerate(self._tasks[project_id]):
+            if task.id == updated_task.id:
+                self._tasks[project_id][i] = updated_task
+                return
+        raise NotFoundError(f"Task with ID '{updated_task.id}' not found in project '{project_id}'.")

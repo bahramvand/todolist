@@ -1,5 +1,5 @@
 from models.project import Project
-from models.task import Task
+from models.task import Task, VALID_STATUSES
 from core.repository import ProjectRepository
 from core.exceptions import DuplicateError, ValidationError, NotFoundError
 from core.repository import TaskRepository
@@ -44,8 +44,8 @@ class ProjectManager:
 
     def delete_project(self, project_id: str):
         self.repo.delete(project_id)
-        # TODO cascade delete 
-        print(f"Project '{project_id}' deleted successfully.")
+        TaskManager().repo.delete_all_by_project(project_id)
+        print(f"Project '{project_id}' and all its tasks deleted successfully.")
 
 class TaskManager:
     """Manages tasks inside projects."""
@@ -70,3 +70,33 @@ class TaskManager:
             for t in tasks
         ]
         print_table(rows, ["ID", "Title", "Status", "Deadline"])
+        
+    def update_task(self, project_id: str, task_id: str, new_title: str, new_desc: str, new_status: str, new_deadline: str | None):
+        task = self.repo.get_task(project_id, task_id)
+
+        validate_length("Task title", new_title, 3)
+        validate_length("Task description", new_desc, 10)
+
+        if new_status not in VALID_STATUSES:
+            raise ValidationError("Invalid status. Must be one of: todo, doing, done.")
+
+        task.title = new_title.strip()
+        task.description = new_desc.strip()
+        task.status = new_status
+        if new_deadline:
+            task.deadline = task._validate_deadline(new_deadline)
+
+        self.repo.update_task(project_id, task)
+        print(f"Task '{task_id}' updated successfully.")
+
+    def change_status(self, project_id: str, task_id: str, new_status: str):
+        if new_status not in {"todo", "doing", "done"}:
+            raise ValidationError("Invalid status. Must be one of: todo, doing, done.")
+        task = self.repo.get_task(project_id, task_id)
+        task.status = new_status
+        self.repo.update_task(project_id, task)
+        print(f"Task '{task_id}' status updated to '{new_status}'.")
+
+    def delete_task(self, project_id: str, task_id: str):
+        self.repo.delete_task(project_id, task_id)
+        print(f"Task '{task_id}' deleted successfully.")

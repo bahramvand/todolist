@@ -6,13 +6,16 @@ def main():
 
     while True:
         print("\n=== ToDoList CLI ===")
-        print("1. Create new project")
-        print("2. List projects")
-        print("3. Edit project")
-        print("4. Delete project")
-        print("5. Create new task")
-        print("6. List tasks of a project")
-        print("7. Exit")
+        print("1.  Create new project")
+        print("2.  List projects")
+        print("3.  Edit project")
+        print("4.  Delete project")
+        print("5.  Create new task")
+        print("6.  List tasks of a project")
+        print("7.  Edit task")
+        print("8.  Change task status")
+        print("9.  Delete task")
+        print("10. Exit")
 
         choice = input("Select an option: ").strip()
 
@@ -71,6 +74,35 @@ def main():
             task_manager.list_tasks(pid)
 
         elif choice == "7":
+            pid = input("Enter project ID: ")
+            tid = input("Enter task ID to edit: ")
+            title = input("Enter new title: ")
+            desc = input("Enter new description: ")
+            status = input("Enter new status (todo/doing/done): ")
+            deadline = input("Enter new deadline (YYYY-MM-DD) [optional]: ") or None
+            try:
+                task_manager.update_task(pid, tid, title, desc, status, deadline)
+            except Exception as e:
+                print(f"Error: {e}")
+
+        elif choice == "8":
+            pid = input("Enter project ID: ")
+            tid = input("Enter task ID: ")
+            status = input("Enter new status (todo/doing/done): ")
+            try:
+                task_manager.change_status(pid, tid, status)
+            except Exception as e:
+                print(f"Error: {e}")
+
+        elif choice == "9":
+            pid = input("Enter project ID: ")
+            tid = input("Enter task ID to delete: ")
+            try:
+                task_manager.delete_task(pid, tid)
+            except Exception as e:
+                print(f"Error: {e}")
+
+        elif choice == "10":
             print("Goodbye!")
             break
 
