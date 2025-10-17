@@ -1,8 +1,7 @@
-from core.exceptions import NotFoundError, DuplicateError, LimitError
-from models.project import Project
-from models.task import Task
-from core.constants import TASK_OF_NUMBER_MAX
-from core.constants import PROJECT_OF_NUMBER_MAX
+from todolist.models.project import Project
+from todolist.models.task import Task
+from todolist.core.exceptions import NotFoundError, DuplicateError, LimitError
+from todolist.core.constants import TASK_OF_NUMBER_MAX, PROJECT_OF_NUMBER_MAX
 
 
 class ProjectRepository:

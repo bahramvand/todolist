@@ -1,9 +1,9 @@
-from models.project import Project
-from models.task import Task, VALID_STATUSES
-from core.repository import ProjectRepository
-from core.exceptions import DuplicateError, ValidationError, NotFoundError
-from core.repository import TaskRepository
-from core.utils import print_table, validate_length
+from todolist.models.project import Project
+from todolist.models.task import Task, VALID_STATUSES
+from todolist.core.repository import ProjectRepository
+from todolist.core.exceptions import DuplicateError, ValidationError, NotFoundError
+from todolist.core.repository import TaskRepository
+from todolist.core.utils import print_table, validate_length
 
 class ProjectManager:
     def __init__(self):
