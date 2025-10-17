@@ -14,7 +14,7 @@ class ProjectManager:
 
         project = Project(name, description)
         self.repo.add(project)
-        print(f"✅ Project '{project.name}' created successfully.")
+        print(f"Project '{project.name}' created successfully.")
         return project
 
     def list_projects(self):
