@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from core.constants import PROJECT_OF_NUMBER_MAX
-from core.exceptions import ValidationError, LimitError
-from core.utils import validate_length
+from todolist.core.constants import PROJECT_OF_NUMBER_MAX
+from todolist.core.exceptions import ValidationError, LimitError
+from todolist.core.utils import validate_length
 
 
 class Project:
