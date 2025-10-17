@@ -1,8 +1,9 @@
 from models.project import Project
+from models.task import Task
 from core.repository import ProjectRepository
 from core.exceptions import DuplicateError, ValidationError, NotFoundError
+from core.repository import TaskRepository
 from core.utils import print_table, validate_length
-
 
 class ProjectManager:
     def __init__(self):
@@ -45,3 +46,27 @@ class ProjectManager:
         self.repo.delete(project_id)
         # TODO cascade delete 
         print(f"Project '{project_id}' deleted successfully.")
+
+class TaskManager:
+    """Manages tasks inside projects."""
+
+    def __init__(self):
+        self.repo = TaskRepository()
+
+    def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
+        
+        task = Task(title, description, status, deadline)
+        self.repo.add_task(project_id, task)
+        print(f"Task '{task.title}' added successfully to project '{project_id}'.")
+        return task
+
+    def list_tasks(self, project_id: str):
+        tasks = self.repo.get_tasks_by_project(project_id)
+        if not tasks:
+            print("No tasks found for this project.")
+            return
+        rows = [
+            (t.id, t.title[:20], t.status, t.deadline.strftime("%Y-%m-%d") if t.deadline else "-")
+            for t in tasks
+        ]
+        print_table(rows, ["ID", "Title", "Status", "Deadline"])
