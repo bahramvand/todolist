@@ -1,4 +1,4 @@
-from core.managers import ProjectManager, TaskManager
+from todolist.core.managers import ProjectManager, TaskManager
 
 def main():
     project_manager = ProjectManager()
