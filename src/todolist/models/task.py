@@ -1,11 +1,8 @@
 import uuid
 from datetime import datetime
-from todolist.core.constants import TASK_OF_NUMBER_MAX
 from todolist.core.exceptions import ValidationError
 from todolist.core.utils import validate_length
-
-VALID_STATUSES = {"todo", "doing", "done"}
-
+from todolist.core.constants import VALID_STATUSES, ERR_INVALID_STATUS, ERR_INVALID_DEADLINE
 
 class Task:
     """Represents a task belonging to a project."""
@@ -15,7 +12,7 @@ class Task:
         validate_length("Task description", description, 10)
 
         if status not in VALID_STATUSES:
-            raise ValidationError(f"Invalid status '{status}'. Must be one of {VALID_STATUSES}.")
+            raise ValidationError(ERR_INVALID_STATUS.format(status=status, valid_statuses=", ".join(VALID_STATUSES)))
 
         self.id = str(uuid.uuid4())
         self.title = title.strip()
@@ -30,7 +27,7 @@ class Task:
         try:
             return datetime.strptime(deadline, "%Y-%m-%d")
         except ValueError:
-            raise ValidationError("Deadline must be in YYYY-MM-DD format.")
+            raise ValidationError(ERR_INVALID_DEADLINE)
 
     def __str__(self):
         return f"[{self.id[:8]}] {self.title} ({self.status})"

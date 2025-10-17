@@ -1,7 +1,5 @@
 import uuid
 from datetime import datetime
-from todolist.core.constants import PROJECT_OF_NUMBER_MAX
-from todolist.core.exceptions import ValidationError, LimitError
 from todolist.core.utils import validate_length
 
 
