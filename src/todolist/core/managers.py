@@ -1,9 +1,9 @@
 from todolist.models.project import Project
 from todolist.models.task import Task, VALID_STATUSES
-from todolist.core.repository import ProjectRepository
+from todolist.core.repository import ProjectRepository, TaskRepository
 from todolist.core.exceptions import DuplicateError, ValidationError, NotFoundError
-from todolist.core.repository import TaskRepository
 from todolist.core.utils import print_table, validate_length
+from todolist.core.constants import ERR_DUPLICATE_PROJECT, ERR_INVALID_STATUS_UPDATE, ERR_PROJECT_NOT_EXISTS
 
 class ProjectManager:
     def __init__(self):
@@ -45,17 +45,16 @@ class ProjectManager:
                     deadline = t.deadline.strftime("%Y-%m-%d") if t.deadline else "-"
                     print(f"  - [{t.id[:8]}] {t.title[:30]} ({t.status}) - Deadline: {deadline}")
 
-
     def edit_project(self, project_id: str, new_name: str, new_description: str):
         project = self.repo.get_by_id(project_id)
         validate_length("Project name", new_name, 3)
         validate_length("Project description", new_description, 10)
 
-        # Check duplicataion
+        # Check duplication
         all_projects = self.repo.get_all()
         for p in all_projects:
             if p.id != project.id and p.name.lower() == new_name.lower():
-                raise DuplicateError(f"Project name '{new_name}' already exists.")
+                raise DuplicateError(ERR_DUPLICATE_PROJECT.format(name=new_name))
 
         project.name = new_name.strip()
         project.description = new_description.strip()
@@ -71,7 +70,7 @@ class ProjectManager:
         try:
             self.repo.get_by_id(project_id)
         except NotFoundError:
-            raise ValidationError(f"Project with ID '{project_id}' does not exist.")    
+            raise ValidationError(ERR_PROJECT_NOT_EXISTS.format(project_id=project_id))
     
 class TaskManager:
     """Manages tasks inside projects."""
@@ -106,7 +105,7 @@ class TaskManager:
         validate_length("Task description", new_desc, 10)
 
         if new_status not in VALID_STATUSES:
-            raise ValidationError("Invalid status. Must be one of: todo, doing, done.")
+            raise ValidationError(ERR_INVALID_STATUS_UPDATE.format(valid_statuses=", ".join(VALID_STATUSES)))
 
         task.title = new_title.strip()
         task.description = new_desc.strip()
@@ -118,8 +117,8 @@ class TaskManager:
         print(f"Task '{task_id}' updated successfully.")
 
     def change_status(self, project_id: str, task_id: str, new_status: str):
-        if new_status not in {"todo", "doing", "done"}:
-            raise ValidationError("Invalid status. Must be one of: todo, doing, done.")
+        if new_status not in VALID_STATUSES:
+            raise ValidationError(ERR_INVALID_STATUS_UPDATE.format(valid_statuses=", ".join(VALID_STATUSES)))
         task = self.repo.get_task(project_id, task_id)
         task.status = new_status
         self.repo.update_task(project_id, task)

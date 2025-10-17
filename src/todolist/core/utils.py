@@ -1,6 +1,8 @@
+from todolist.core.constants import ERR_MIN_LENGTH
+
 def validate_length(field_name: str, value: str, min_length: int):
     if len(value.strip()) < min_length:
-        raise ValueError(f"{field_name} must have at least {min_length} characters.")
+        raise ValueError(ERR_MIN_LENGTH.format(field_name=field_name, min_length=min_length))
 
 def print_table(items, headers):
     if not items:
