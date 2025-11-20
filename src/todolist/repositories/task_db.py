@@ -1,86 +1,125 @@
 from __future__ import annotations
-
 from datetime import date, datetime
-from typing import List, Optional
-
+from typing import List
 from sqlalchemy import and_, select
-
 from todolist.db.models import TaskDB
 from todolist.db.session import get_session
-from todolist.models.task import Task 
+from todolist.models.task import Task
+from todolist.core.exceptions import NotFoundError
+from todolist.core.constants import ERR_NOT_FOUND_TASK
 
 
 class TaskDBRepository:
     @staticmethod
+    def _deadline_to_db(deadline) -> date | None:
+        if deadline is None:
+            return None
+        if isinstance(deadline, datetime):
+            return deadline.date()
+        if isinstance(deadline, date):
+            return deadline
+        return None
+
+    @staticmethod
     def _to_domain(model: TaskDB) -> Task:
         return Task(
-            id=model.id,
+            id=str(model.id),
             title=model.title,
-            description=getattr(model, "description", None),
+            description=model.description or "",
             status=model.status,
             deadline=model.deadline,
             created_at=model.created_at,
             closed_at=model.closed_at,
-            project_id=model.project_id,
+            project_id=str(model.project_id),
         )
 
-    def create(self, task: Task) -> Task:
+    def create(self, project_id: str, task: Task) -> Task:
+        pid = int(project_id)
         with get_session() as session:
             db_task = TaskDB(
                 title=task.title,
-                description=getattr(task, "description", None),
+                description=task.description,
                 status=task.status,
-                deadline=task.deadline,
-                project_id=task.project_id,
+                deadline=self._deadline_to_db(task.deadline),
+                project_id=pid,
             )
             session.add(db_task)
             session.flush()
             session.refresh(db_task)
-            return self._to_domain(db_task)
 
-    def get_by_id(self, task_id: int) -> Optional[Task]:
+            task.id = str(db_task.id)
+            task.project_id = str(db_task.project_id)
+            task.created_at = db_task.created_at
+            task.closed_at = db_task.closed_at
+            return task
+
+    def get_by_id(self, task_id: str) -> Task:
+        tid = int(task_id)
         with get_session() as session:
-            stmt = select(TaskDB).where(TaskDB.id == task_id)
+            stmt = select(TaskDB).where(TaskDB.id == tid)
             result = session.execute(stmt).scalar_one_or_none()
             if result is None:
-                return None
+                raise NotFoundError(
+                    ERR_NOT_FOUND_TASK.format(task_id=task_id, project_id="N/A")
+                )
             return self._to_domain(result)
 
-    def list_by_project(self, project_id: int) -> List[Task]:
+    def list_by_project(self, project_id: str) -> List[Task]:
+        pid = int(project_id)
         with get_session() as session:
             stmt = (
                 select(TaskDB)
-                .where(TaskDB.project_id == project_id)
+                .where(TaskDB.project_id == pid)
                 .order_by(TaskDB.id)
             )
             results = session.execute(stmt).scalars().all()
             return [self._to_domain(t) for t in results]
 
-    def update_status(
-        self,
-        task_id: int,
-        new_status: str,
-        closed_at: Optional[datetime] = None,
-    ) -> Optional[Task]:
+    def update_task(self, new_task: Task) -> Task:
+        if new_task.id is None:
+            raise ValueError("Task id is required to update")
+
+        tid = int(new_task.id)
         with get_session() as session:
-            stmt = select(TaskDB).where(TaskDB.id == task_id)
+            stmt = select(TaskDB).where(TaskDB.id == tid)
             db_task = session.execute(stmt).scalar_one_or_none()
             if db_task is None:
-                return None
+                raise NotFoundError(
+                    ERR_NOT_FOUND_TASK.format(
+                        task_id=new_task.id,
+                        project_id=new_task.project_id or "N/A",
+                    )
+                )
 
-            db_task.status = new_status
-            db_task.closed_at = closed_at
+            db_task.title = new_task.title
+            db_task.description = new_task.description
+            db_task.status = new_task.status
+            db_task.deadline = self._deadline_to_db(new_task.deadline)
+            db_task.closed_at = new_task.closed_at
+
             session.add(db_task)
             session.flush()
             session.refresh(db_task)
             return self._to_domain(db_task)
 
-    def delete(self, task_id: int) -> None:
+    def delete(self, task_id: str) -> None:
+        tid = int(task_id)
         with get_session() as session:
-            stmt = select(TaskDB).where(TaskDB.id == task_id)
+            stmt = select(TaskDB).where(TaskDB.id == tid)
             db_task = session.execute(stmt).scalar_one_or_none()
-            if db_task:
-                session.delete(db_task)
+            if db_task is None:
+                raise NotFoundError(
+                    ERR_NOT_FOUND_TASK.format(task_id=task_id, project_id="N/A")
+                )
+            session.delete(db_task)
+
+    def delete_all_by_project(self, project_id: str) -> None:
+        pid = int(project_id)
+        with get_session() as session:
+            stmt = select(TaskDB).where(TaskDB.project_id == pid)
+            results = session.execute(stmt).scalars().all()
+            for t in results:
+                session.delete(t)
 
     def list_overdue_open_tasks(self, today: date) -> List[Task]:
         with get_session() as session:
