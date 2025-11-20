@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: ${DB_USER:-todolist}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-todolist}
     ports:
-      - '${DB_PORT:-5400}:5400'
+      - '${DB_PORT:-5400}:5432'
     volumes:
       - todolist-db-data:/var/lib/postgresql/data
     healthcheck:
