@@ -4,7 +4,7 @@ from todolist.core.managers import ProjectManager, TaskManager
 from todolist.repositories.project_db import ProjectDBRepository
 from todolist.repositories.task_db import TaskDBRepository
 from todolist.commands.autoclose_overdue import run as run_autoclose_overdue
-
+from todolist.commands.autoclose_scheduler import run as run_autoclose_scheduler
 
 def main():
     if len(sys.argv) > 1:
@@ -12,6 +12,10 @@ def main():
 
         if command == "tasks:autoclose-overdue":
             run_autoclose_overdue()
+            return
+
+        if command == "tasks:start-autoclose-scheduler":
+            run_autoclose_scheduler()
             return
     
     project_repo = ProjectDBRepository()

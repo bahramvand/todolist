@@ -9,13 +9,13 @@ def run() -> None:
     """
     Run a simple scheduler that calls the auto-close command every day.
 
-    By default: every day at 02:00 local time.
+    By default: every day at 01:00 local time.
     """
 
-    schedule.every().day.at("02:00").do(run_autoclose_overdue)
+    schedule.every().day.at("01:00").do(run_autoclose_overdue)
 
     print("[INFO] Auto-close scheduler started.")
-    print("[INFO] It will run tasks:autoclose-overdue every day at 02:00.")
+    print("[INFO] It will run tasks:autoclose-overdue every day at 01:00.")
 
     while True:
         schedule.run_pending()
