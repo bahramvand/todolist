@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
+from sqlalchemy.orm import sessionmaker, Session
 
 from todolist.core.settings import db_settings
 
@@ -14,3 +15,16 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
+@contextmanager
+def get_session() -> Session:
+    """Provide a transactional scope around a series of operations."""
+    session: Session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()

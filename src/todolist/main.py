@@ -1,9 +1,11 @@
 from todolist.core.managers import ProjectManager, TaskManager
-from todolist.core.repository import ProjectRepository, TaskRepository
+from todolist.repositories.project_db import ProjectDBRepository
+from todolist.repositories.task_db import TaskDBRepository
+
 
 def main():
-    project_repo = ProjectRepository()
-    task_repo = TaskRepository()
+    project_repo = ProjectDBRepository()
+    task_repo = TaskDBRepository()
 
     project_manager = ProjectManager(project_repo)
     task_manager = TaskManager(task_repo, project_manager)
@@ -79,31 +81,28 @@ def main():
             task_manager.list_tasks(pid)
 
         elif choice == "7":
-            pid = input("Enter project ID: ")
             tid = input("Enter task ID to edit: ")
             title = input("Enter new title: ")
             desc = input("Enter new description: ")
             status = input("Enter new status (todo/doing/done): ")
             deadline = input("Enter new deadline (YYYY-MM-DD) [optional]: ") or None
             try:
-                task_manager.update_task(pid, tid, title, desc, status, deadline)
+                task_manager.update_task(tid, title, desc, status, deadline)
             except Exception as e:
                 print(f"Error: {e}")
 
         elif choice == "8":
-            pid = input("Enter project ID: ")
             tid = input("Enter task ID: ")
             status = input("Enter new status (todo/doing/done): ")
             try:
-                task_manager.change_status(pid, tid, status)
+                task_manager.change_status(tid, status)
             except Exception as e:
                 print(f"Error: {e}")
 
         elif choice == "9":
-            pid = input("Enter project ID: ")
             tid = input("Enter task ID to delete: ")
             try:
-                task_manager.delete_task(pid, tid)
+                task_manager.delete_task(tid)
             except Exception as e:
                 print(f"Error: {e}")
 
