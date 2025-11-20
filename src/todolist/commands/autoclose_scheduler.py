@@ -19,4 +19,4 @@ def run() -> None:
 
     while True:
         schedule.run_pending()
-        time.sleep(60) # 1h = 60*60*24
+        time.sleep(60)
