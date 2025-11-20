@@ -7,7 +7,7 @@ load_dotenv()
 @dataclass
 class DatabaseSettings:
     host: str = os.getenv("DB_HOST", "localhost")
-    port: str = os.getenv("DB_PORT", "5432")
+    port: str = os.getenv("DB_PORT", "5400")
     user: str = os.getenv("DB_USER", "todolist")
     password: str = os.getenv("DB_PASSWORD", "todolist")
     name: str = os.getenv("DB_NAME", "todolist")
