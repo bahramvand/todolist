@@ -6,8 +6,8 @@ from todolist.core.utils import print_table, validate_length
 from todolist.core.constants import ERR_DUPLICATE_PROJECT, ERR_INVALID_STATUS_UPDATE, ERR_PROJECT_NOT_EXISTS
 
 class ProjectManager:
-    def __init__(self):
-        self.repo = ProjectRepository()
+    def __init__(self, project_repo: ProjectRepository):
+        self.repo = project_repo
 
     def create_project(self, name: str, description: str):
         validate_length("Project name", name, 3)
@@ -30,7 +30,7 @@ class ProjectManager:
         print_table(rows, ["ID", "Name", "Description"])
 
     def list_projects_with_tasks(self, task_manager: 'TaskManager'):
-        projects = self._get_all_projects() 
+        projects = self._get_all_projects()
         if not projects:
             print("No projects found.")
             return
@@ -65,20 +65,21 @@ class ProjectManager:
         self.repo.delete(project_id)
         task_manager.repo.delete_all_by_project(project_id)
         print(f"Project '{project_id}' and all its tasks deleted successfully.")
-    
+
     def validate_project_exists(self, project_id: str):
         try:
             self.repo.get_by_id(project_id)
         except NotFoundError:
             raise ValidationError(ERR_PROJECT_NOT_EXISTS.format(project_id=project_id))
-    
+
 class TaskManager:
     """Manages tasks inside projects."""
 
-    def __init__(self, project_manager: ProjectManager):
-        self.repo = TaskRepository()
-        self.project_manager = project_manager  
-        
+    def __init__(self, task_repo: TaskRepository, project_manager: ProjectManager):
+        # Constructor Injection
+        self.repo = task_repo
+        self.project_manager = project_manager
+
     def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
         self.project_manager.validate_project_exists(project_id)
 
@@ -97,7 +98,7 @@ class TaskManager:
             for t in tasks
         ]
         print_table(rows, ["ID", "Title", "Status", "Deadline"])
-        
+
     def update_task(self, project_id: str, task_id: str, new_title: str, new_desc: str, new_status: str, new_deadline: str | None):
         task = self.repo.get_task(project_id, task_id)
 

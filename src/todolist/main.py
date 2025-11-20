@@ -1,8 +1,12 @@
 from todolist.core.managers import ProjectManager, TaskManager
+from todolist.core.repository import ProjectRepository, TaskRepository
 
 def main():
-    project_manager = ProjectManager()
-    task_manager = TaskManager(project_manager)
+    project_repo = ProjectRepository()
+    task_repo = TaskRepository()
+
+    project_manager = ProjectManager(project_repo)
+    task_manager = TaskManager(task_repo, project_manager)
 
     while True:
         print("\n=== ToDoList CLI ===")
@@ -108,7 +112,7 @@ def main():
                 project_manager.list_projects_with_tasks(task_manager)
             except Exception as e:
                 print(f"Error: {e}")
-        
+
         elif choice == "11":
             print("Goodbye!")
             break
