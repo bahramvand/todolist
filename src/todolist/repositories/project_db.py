@@ -5,9 +5,10 @@ from todolist.db.session import get_session
 from todolist.models.project import Project
 from todolist.exceptions import NotFoundError
 from todolist.core.constants import ERR_NOT_FOUND_PROJECT
+from todolist.repositories.base import ProjectRepository
 
 
-class ProjectDBRepository:
+class ProjectDBRepository(ProjectRepository):
     @staticmethod
     def _to_domain(model: ProjectDB) -> Project:
         return Project(

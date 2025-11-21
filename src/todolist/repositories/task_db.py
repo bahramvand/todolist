@@ -7,9 +7,9 @@ from todolist.db.session import get_session
 from todolist.models.task import Task
 from todolist.exceptions import NotFoundError
 from todolist.core.constants import ERR_NOT_FOUND_TASK
+from todolist.repositories.base import TaskRepository
 
-
-class TaskDBRepository:
+class TaskDBRepository(TaskRepository):
     @staticmethod
     def _deadline_to_db(deadline) -> date | None:
         if deadline is None:
