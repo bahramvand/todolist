@@ -1,4 +1,4 @@
-from todolist.exceptions import DuplicateError, ValidationError, NotFoundError
+from todolist.exceptions import DuplicateError, NotFoundError
 from todolist.models.project import Project
 from todolist.models.task import Task
 from todolist.core.constants import TASK_OF_NUMBER_MAX, PROJECT_OF_NUMBER_MAX, ERR_MAX_PROJECTS, ERR_MAX_TASKS, ERR_DUPLICATE_PROJECT, ERR_NOT_FOUND_PROJECT, ERR_NOT_FOUND_TASK, ERR_NO_TASKS_PROJECT
