@@ -1,9 +1,15 @@
-from todolist.services.project_service import ProjectService
+from __future__ import annotations 
+
 from todolist.models.task import Task, VALID_STATUSES
 from todolist.repositories.task_db import TaskDBRepository
 from todolist.exceptions import ValidationError
 from todolist.core.utils import print_table, validate_length
 from todolist.core.constants import  ERR_INVALID_STATUS_UPDATE
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from todolist.services.project_service import ProjectService
+
 
 
 class TaskService:

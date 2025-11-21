@@ -1,9 +1,14 @@
-from todolist.services.task_service import TaskService
+from __future__ import annotations 
+
 from todolist.models.project import Project
 from todolist.repositories.project_db import ProjectDBRepository
 from todolist.exceptions import DuplicateError, ValidationError, NotFoundError
 from todolist.core.utils import print_table, validate_length
 from todolist.core.constants import ERR_DUPLICATE_PROJECT, ERR_PROJECT_NOT_EXISTS
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from todolist.services.task_service import TaskService
 
 
 class ProjectService:
