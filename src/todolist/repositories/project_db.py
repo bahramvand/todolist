@@ -3,7 +3,7 @@ from sqlalchemy import select
 from todolist.db.models import ProjectDB
 from todolist.db.session import get_session
 from todolist.models.project import Project
-from todolist.core.exceptions import NotFoundError
+from todolist.exceptions import NotFoundError
 from todolist.core.constants import ERR_NOT_FOUND_PROJECT
 
 

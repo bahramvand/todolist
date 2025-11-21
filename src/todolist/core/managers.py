@@ -2,7 +2,7 @@ from todolist.models.project import Project
 from todolist.models.task import Task, VALID_STATUSES
 from todolist.repositories.project_db import ProjectDBRepository
 from todolist.repositories.task_db import TaskDBRepository
-from todolist.core.exceptions import DuplicateError, ValidationError, NotFoundError
+from todolist.exceptions import DuplicateError, ValidationError, NotFoundError
 from todolist.core.utils import print_table, validate_length
 from todolist.core.constants import ERR_DUPLICATE_PROJECT, ERR_INVALID_STATUS_UPDATE, ERR_PROJECT_NOT_EXISTS
 

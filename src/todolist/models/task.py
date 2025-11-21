@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from todolist.core.exceptions import ValidationError
+from todolist.exceptions import ValidationError
 from todolist.core.utils import validate_length
 from todolist.core.constants import (
     VALID_STATUSES,
