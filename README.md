@@ -1,29 +1,15 @@
 # todolist
 
-1. اجرای دیتابیس:
-   docker compose up -d db
-   دیتابیس را در پس‌زمینه اجرا می‌کند.
+1. docker compose up -d db
 
-2. خاموش کردن دیتابیس:
-   docker compose down
-   دیتابیس را متوقف می‌کند.
+2. docker compose down
 
-3. نصب وابستگی‌ها:
-   poetry install
-   پکیج‌های پایتون را نصب می‌کند.
+3. poetry install
 
-4. ساخت جداول:
-   poetry run alembic upgrade head
-   جداول دیتابیس را می‌سازد.
+4. poetry run alembic upgrade head
 
-5. اجرای برنامه:
-   poetry run todolist
-   اجرای اصلی برنامه.
+5. poetry run todolist
 
-6. بستن تسک‌های منقضی‌شده:
-   poetry run todolist tasks:autoclose-overdue
-   تسک‌های overdue را می‌بندد.
+6. poetry run todolist tasks:autoclose-overdue
 
-7. اجرای خودکار در پس‌زمینه:
-   poetry run todolist tasks:start-autoclose-scheduler
-   بررسی و بستن خودکار تسک‌ها در زمان‌بندی مشخص.
+7. poetry run todolist tasks:start-autoclose-scheduler
