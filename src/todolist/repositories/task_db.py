@@ -33,8 +33,8 @@ class TaskDBRepository(TaskRepository):
             project_id=str(model.project_id),
         )
 
-    def create(self, project_id: str, task: Task) -> Task:
-        pid = int(project_id)
+    def create(self, task: Task) -> Task:
+        pid = int(task.project_id)
         with get_session() as session:
             db_task = TaskDB(
                 title=task.title,
