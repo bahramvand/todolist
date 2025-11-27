@@ -10,7 +10,7 @@ class TaskResponse(BaseModel):
     title: str
     description: Optional[str]
     status: str
-    due_date: Optional[datetime]
+    deadline: Optional[datetime]
     created_at: datetime
 
     class Config:

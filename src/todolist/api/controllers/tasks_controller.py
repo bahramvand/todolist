@@ -27,7 +27,7 @@ def _task_to_response(task: Task) -> TaskResponse:
         title=task.title,
         description=task.description,
         status=task.status,
-        due_date=task.due_date,
+        deadline=task.deadline,
         created_at=task.created_at,
     )
 
@@ -109,7 +109,7 @@ def create_task(
         project_id=project_id,
         title=payload.title,
         description=payload.description,
-        due_date=payload.due_date,
+        deadline=payload.deadline,
     )
 
     created_task = task_repo.create(task)
@@ -121,7 +121,7 @@ def create_task(
     response_model=TaskResponse,
     summary="Update task",
     description=(
-        "Updates task fields (title, description, due_date, status). "
+        "Updates task fields (title, description, deadline, status). "
         "Only provided fields will be changed."
     ),
 )
@@ -154,14 +154,14 @@ def update_task(
         if payload.description is not None
         else existing_task.description
     )
-    new_due_date = payload.due_date if payload.due_date is not None else existing_task.due_date
+    new_deadline = payload.deadline if payload.deadline is not None else existing_task.deadline
     new_status = payload.status if payload.status is not None else existing_task.status
 
     updated_task = Task(
         project_id=existing_task.project_id,
         title=new_title,
         description=new_description,
-        due_date=new_due_date,
+        deadline=new_deadline,
         status=new_status,
     )
     updated_task.id = existing_task.id

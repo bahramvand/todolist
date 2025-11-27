@@ -17,7 +17,7 @@ class TaskCreateRequest(BaseModel):
         description="Optional task description.",
         examples=["Buy 2 liters of milk from the store."],
     )
-    due_date: Optional[datetime] = Field(
+    deadline: Optional[datetime] = Field(
         None,
         description="Optional due date for the task.",
         examples=["2025-01-01T12:00:00"],
@@ -36,7 +36,7 @@ class TaskUpdateRequest(BaseModel):
         None,
         description="New task description (optional).",
     )
-    due_date: Optional[datetime] = Field(
+    deadline: Optional[datetime] = Field(
         None,
         description="New due date (optional).",
         examples=["2025-02-01T09:00:00"],
