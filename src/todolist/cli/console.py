@@ -10,6 +10,8 @@ def run_console() -> None:
     project_service = ProjectService(project_repo)
     task_service = TaskService(task_repo, project_service)
 
+    print("⚠️  CLI is being deprecated. Please use the Web API (FastAPI) instead.")
+
     while True:
         print("\n======== ToDoList CLI ========")
         print("1.  Create new project")

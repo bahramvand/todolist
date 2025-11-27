@@ -1,4 +1,4 @@
-from __future__ import annotations 
+from __future__ import annotations
 
 from todolist.models.task import Task, VALID_STATUSES
 from todolist.repositories.task_db import TaskDBRepository
@@ -20,8 +20,8 @@ class TaskService:
     def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
         self.project_manager.validate_project_exists(project_id)
 
-        task = Task(title, description, status, deadline)
-        self.repo.create(project_id, task)
+        task = Task(title, description, status, deadline, project_id=project_id)
+        self.repo.create(task)
         print(f"Task '{task.title}' added successfully to project '{project_id}'.")
         return task
 
