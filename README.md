@@ -48,6 +48,96 @@ poetry run todolist tasks:autoclose-overdue
 poetry run todolist tasks:start-autoclose-scheduler
 ```
 
+----------
+
+## Environment configuration (.env)
+
+This project uses a `.env` file for configuration.
+Most limits, statuses, and error messages are configurable there and are loaded via
+`python-dotenv` and the `todolist.core.settings` / `todolist.core.constants` modules.
+
+Typical usage:
+
+```bash
+cp .env.example .env
+```
+
+In the `.env` file you can configure for example:
+
+- **Database settings**: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+
+- **Business rules**:
+
+  - `PROJECT_OF_NUMBER_MAX`, `TASK_OF_NUMBER_MAX`
+
+  - `VALID_STATUSES` for tasks
+
+- **Error messages** (all `ERR_...` variables), e.g.:
+
+  - `ERR_MIN_LENGTH`
+
+  - `ERR_INVALID_STATUS`
+
+  - `ERR_INVALID_DEADLINE`
+
+  - `ERR_NOT_FOUND_PROJECT`, `ERR_NOT_FOUND_TASK`
+
+  - `ERR_DUPLICATE_PROJECT`
+
+All these values are used by the domain layer and the Web API, so changing them in `.env`
+will change the behavior and messages without modifying the code.
+
+----------
+
+## API Endpoints (overview)
+
+In addition to the CLI commands above, the project exposes a RESTful Web API.
+
+### Base URL
+
+By default (when running locally):
+
+- `http://127.0.0.1:8000`
+
+### Documentation
+
+- Swagger UI: `http://127.0.0.1:8000/docs`
+
+- ReDoc: `http://127.0.0.1:8000/redoc`
+
+### Health
+
+- `GET /api/health`
+
+### Projects
+
+- `GET /api/projects` – list all projects
+
+- `GET /api/projects/{project_id}` – get a single project
+
+- `POST /api/projects` – create a new project
+
+- `PUT /api/projects/{project_id}` – update an existing project
+
+- `DELETE /api/projects/{project_id}` – delete a project and its tasks
+
+### Tasks
+
+- `GET /api/projects/{project_id}/tasks` – list tasks of a project
+
+- `GET /api/projects/{project_id}/tasks/{task_id}` – get a single task
+
+- `POST /api/projects/{project_id}/tasks` – create a new task in a project
+
+- `PUT /api/projects/{project_id}/tasks/{task_id}` – update a task (status, title, etc.)
+
+- `DELETE /api/projects/{project_id}/tasks/{task_id}` – delete a task
+
+All validations (lengths, valid statuses, deadline format, etc.) and error messages are
+handled by the domain layer and use the texts defined in `.env`.
+
+----------
+
 ## API Test Commands
 
 ### List Projects
