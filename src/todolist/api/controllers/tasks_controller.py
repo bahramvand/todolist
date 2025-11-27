@@ -168,7 +168,7 @@ def update_task(
     updated_task.created_at = existing_task.created_at
 
     try:
-        saved_task = task_repo.update(task_id, updated_task)
+        saved_task = task_repo.update_task(task_id, updated_task)
     except NotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
