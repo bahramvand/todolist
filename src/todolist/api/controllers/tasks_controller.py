@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from todolist.api.controller_schemas.requests.task_request_schema import (
     TaskCreateRequest,
@@ -9,7 +9,9 @@ from todolist.api.controller_schemas.requests.task_request_schema import (
 from todolist.api.controller_schemas.responses.task_response_schema import (
     TaskResponse,
 )
-from todolist.exceptions import NotFoundError
+from todolist.api.dependencies import get_project_repo, get_task_repo
+from todolist.core.constants import ERR_NOT_FOUND_TASK
+from todolist.exceptions import NotFoundError, ValidationError
 from todolist.models.task import Task
 from todolist.repositories.project_db import ProjectDBRepository
 from todolist.repositories.task_db import TaskDBRepository
@@ -32,8 +34,10 @@ def _task_to_response(task: Task) -> TaskResponse:
     )
 
 
-def _ensure_project_exists(project_id: str) -> None:
-    project_repo = ProjectDBRepository()
+def _ensure_project_exists(
+    project_id: str,
+    project_repo: ProjectDBRepository,
+) -> None:
     try:
         project_repo.get_by_id(project_id)
     except NotFoundError as e:
@@ -51,12 +55,12 @@ def _ensure_project_exists(project_id: str) -> None:
 )
 def list_tasks(
     project_id: str = Path(..., description="ID of the project to list tasks for."),
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
 ) -> List[TaskResponse]:
-    _ensure_project_exists(project_id)
+    _ensure_project_exists(project_id, project_repo)
 
-    task_repo = TaskDBRepository()
     tasks = task_repo.list_by_project(project_id)
-
     return [_task_to_response(t) for t in tasks]
 
 
@@ -69,10 +73,11 @@ def list_tasks(
 def get_task(
     project_id: str = Path(..., description="ID of the project."),
     task_id: str = Path(..., description="ID of the task."),
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
 ) -> TaskResponse:
-    _ensure_project_exists(project_id)
+    _ensure_project_exists(project_id, project_repo)
 
-    task_repo = TaskDBRepository()
     try:
         task = task_repo.get_by_id(task_id)
     except NotFoundError as e:
@@ -84,7 +89,7 @@ def get_task(
     if task.project_id != project_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found in this project.",
+            detail=ERR_NOT_FOUND_TASK.format(task_id=task_id, project_id=project_id),
         )
 
     return _task_to_response(task)
@@ -100,17 +105,23 @@ def get_task(
 def create_task(
     payload: TaskCreateRequest,
     project_id: str = Path(..., description="ID of the project."),
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
 ) -> TaskResponse:
-    _ensure_project_exists(project_id)
+    _ensure_project_exists(project_id, project_repo)
 
-    task_repo = TaskDBRepository()
-
-    task = Task(
-        project_id=project_id,
-        title=payload.title,
-        description=payload.description,
-        deadline=payload.deadline,
-    )
+    try:
+        task = Task(
+            title=payload.title,
+            description=payload.description or "",
+            project_id=project_id,
+            deadline=payload.deadline,
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
     created_task = task_repo.create(task)
     return _task_to_response(created_task)
@@ -129,10 +140,10 @@ def update_task(
     payload: TaskUpdateRequest,
     project_id: str = Path(..., description="ID of the project."),
     task_id: str = Path(..., description="ID of the task."),
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
 ) -> TaskResponse:
-    _ensure_project_exists(project_id)
-
-    task_repo = TaskDBRepository()
+    _ensure_project_exists(project_id, project_repo)
 
     try:
         existing_task = task_repo.get_by_id(task_id)
@@ -145,7 +156,7 @@ def update_task(
     if existing_task.project_id != project_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found in this project.",
+            detail=ERR_NOT_FOUND_TASK.format(task_id=task_id, project_id=project_id),
         )
 
     new_title = payload.title.strip() if payload.title is not None else existing_task.title
@@ -154,27 +165,28 @@ def update_task(
         if payload.description is not None
         else existing_task.description
     )
-    new_deadline = payload.deadline if payload.deadline is not None else existing_task.deadline
+    new_deadline = (
+        payload.deadline if payload.deadline is not None else existing_task.deadline
+    )
     new_status = payload.status if payload.status is not None else existing_task.status
 
-    updated_task = Task(
-        project_id=existing_task.project_id,
-        title=new_title,
-        description=new_description,
-        deadline=new_deadline,
-        status=new_status,
-    )
-    updated_task.id = existing_task.id
-    updated_task.created_at = existing_task.created_at
-
     try:
-        saved_task = task_repo.update_task(updated_task)
-    except NotFoundError as e:
+        updated_task = Task(
+            title=new_title,
+            description=new_description or "",
+            status=new_status,
+            deadline=new_deadline,
+            project_id=existing_task.project_id,
+            id=existing_task.id,
+            created_at=existing_task.created_at,
+        )
+    except ValidationError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
 
+    saved_task = task_repo.update_task(updated_task)
     return _task_to_response(saved_task)
 
 
@@ -187,10 +199,10 @@ def update_task(
 def delete_task(
     project_id: str = Path(..., description="ID of the project."),
     task_id: str = Path(..., description="ID of the task."),
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
 ) -> None:
-    _ensure_project_exists(project_id)
-
-    task_repo = TaskDBRepository()
+    _ensure_project_exists(project_id, project_repo)
 
     try:
         task = task_repo.get_by_id(task_id)
@@ -203,15 +215,8 @@ def delete_task(
     if task.project_id != project_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found in this project.",
+            detail=ERR_NOT_FOUND_TASK.format(task_id=task_id, project_id=project_id),
         )
 
-    try:
-        task_repo.delete(task_id)
-    except NotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        )
-
+    task_repo.delete(task_id)
     return

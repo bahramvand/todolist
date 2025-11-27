@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from todolist.api.controller_schemas.requests.project_request_schema import (
     ProjectCreateRequest,
@@ -9,6 +9,7 @@ from todolist.api.controller_schemas.requests.project_request_schema import (
 from todolist.api.controller_schemas.responses.project_response_schema import (
     ProjectResponse,
 )
+from todolist.api.dependencies import get_project_repo, get_task_repo
 from todolist.core.constants import ERR_DUPLICATE_PROJECT
 from todolist.exceptions import NotFoundError
 from todolist.models.project import Project
@@ -36,9 +37,10 @@ def _project_to_response(project: Project) -> ProjectResponse:
     summary="List all projects",
     description="Returns all projects ordered by ID.",
 )
-def list_projects() -> List[ProjectResponse]:
-    repo = ProjectDBRepository()
-    projects = repo.list_all()
+def list_projects(
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+) -> List[ProjectResponse]:
+    projects = project_repo.list_all()
     return [_project_to_response(p) for p in projects]
 
 
@@ -48,10 +50,12 @@ def list_projects() -> List[ProjectResponse]:
     summary="Get project by ID",
     description="Returns a single project by its ID.",
 )
-def get_project(project_id: str) -> ProjectResponse:
-    repo = ProjectDBRepository()
+def get_project(
+    project_id: str,
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+) -> ProjectResponse:
     try:
-        project = repo.get_by_id(project_id)
+        project = project_repo.get_by_id(project_id)
     except NotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -67,12 +71,12 @@ def get_project(project_id: str) -> ProjectResponse:
     summary="Create new project",
     description="Creates a new project with unique name.",
 )
-def create_project(payload: ProjectCreateRequest) -> ProjectResponse:
-    repo = ProjectDBRepository()
-
-    existing_projects = repo.list_all()
+def create_project(
+    payload: ProjectCreateRequest,
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+) -> ProjectResponse:
+    existing_projects = project_repo.list_all()
     normalized_new_name = payload.name.strip().lower()
-
     if any(p.name.lower() == normalized_new_name for p in existing_projects):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -84,7 +88,7 @@ def create_project(payload: ProjectCreateRequest) -> ProjectResponse:
         description=payload.description,
     )
 
-    created_project = repo.create(project)
+    created_project = project_repo.create(project)
     return _project_to_response(created_project)
 
 
@@ -97,11 +101,13 @@ def create_project(payload: ProjectCreateRequest) -> ProjectResponse:
         "If a field is not provided, its previous value will be kept."
     ),
 )
-def update_project(project_id: str, payload: ProjectUpdateRequest) -> ProjectResponse:
-    repo = ProjectDBRepository()
-
+def update_project(
+    project_id: str,
+    payload: ProjectUpdateRequest,
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+) -> ProjectResponse:
     try:
-        project = repo.get_by_id(project_id)
+        project = project_repo.get_by_id(project_id)
     except NotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -115,7 +121,7 @@ def update_project(project_id: str, payload: ProjectUpdateRequest) -> ProjectRes
         else project.description
     )
 
-    all_projects = repo.list_all()
+    all_projects = project_repo.list_all()
     if any(
         p.id != project.id and p.name.lower() == new_name.lower()
         for p in all_projects
@@ -128,12 +134,12 @@ def update_project(project_id: str, payload: ProjectUpdateRequest) -> ProjectRes
     new_project = Project(
         name=new_name,
         description=new_description,
+        id=project.id,
+        created_at=project.created_at,
     )
-    new_project.id = project.id
-    new_project.created_at = project.created_at
 
     try:
-        updated = repo.update(project_id, new_project)
+        updated = project_repo.update(project_id, new_project)
     except NotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -152,16 +158,18 @@ def update_project(project_id: str, payload: ProjectUpdateRequest) -> ProjectRes
         "If project does not exist, returns 404."
     ),
 )
-def delete_project(project_id: str) -> None:
-    project_repo = ProjectDBRepository()
-    task_repo = TaskDBRepository()
-
+def delete_project(
+    project_id: str,
+    project_repo: ProjectDBRepository = Depends(get_project_repo),
+    task_repo: TaskDBRepository = Depends(get_task_repo),
+) -> None:
     try:
         project_repo.delete(project_id)
-        task_repo.delete_all_by_project(project_id)
     except NotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
+
+    task_repo.delete_all_by_project(project_id)
     return
