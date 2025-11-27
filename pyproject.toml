@@ -12,6 +12,8 @@ sqlalchemy = "^2.0.44"
 psycopg2-binary = "^2.9.11"
 alembic = "^1.17.2"
 schedule = "^1.2.2"
+fastapi = "^0.122.0"
+uvicorn = "^0.38.0"
 
 [tool.poetry.scripts]
 todolist = "todolist.main:main"
