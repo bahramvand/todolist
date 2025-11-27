@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -17,10 +16,10 @@ class TaskCreateRequest(BaseModel):
         description="Optional task description.",
         examples=["Buy 2 liters of milk from the store."],
     )
-    deadline: Optional[datetime] = Field(
+    deadline: Optional[str] = Field(
         None,
-        description="Optional due date for the task.",
-        examples=["2025-01-01T12:00:00"],
+        description="Optional deadline in YYYY-MM-DD format.",
+        examples=["2025-01-01"],
     )
 
 
@@ -36,13 +35,13 @@ class TaskUpdateRequest(BaseModel):
         None,
         description="New task description (optional).",
     )
-    deadline: Optional[datetime] = Field(
+    deadline: Optional[str] = Field(
         None,
-        description="New due date (optional).",
-        examples=["2025-02-01T09:00:00"],
+        description="New deadline in YYYY-MM-DD format (optional).",
+        examples=["2025-02-01"],
     )
     status: Optional[str] = Field(
         None,
-        description="New status of the task (e.g. todo, in_progress, done).",
-        examples=["in_progress"],
+        description="New status of the task (e.g. todo,doing,done).",
+        examples=["doing"],
     )
