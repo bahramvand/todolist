@@ -20,7 +20,7 @@ class TaskService:
     def create_task(self, project_id: str, title: str, description: str, status: str = "todo", deadline: str | None = None):
         self.project_manager.validate_project_exists(project_id)
 
-        task = Task(title=title, deadline=description, status=status, deadline=deadline, project_id=project_id)
+        task = Task(title, description, status, deadline, project_id=project_id)
         self.repo.create(task)
         print(f"Task '{task.title}' added successfully to project '{project_id}'.")
         return task

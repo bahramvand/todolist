@@ -24,10 +24,16 @@ poetry install
 poetry run alembic upgrade head
 ```
 
+## Run CLI
+
+```bash
+poetry run todolist
+```
+
 ## Run FastAPI Server
 
 ```bash
-poetry run uvicorn todolist.web_app:app --reload
+poetry run uvicorn todolist.web_app:app
 ```
 
 ## Autoclose Overdue Tasks (once)
