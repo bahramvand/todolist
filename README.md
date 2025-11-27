@@ -113,3 +113,73 @@ curl -X DELETE http://127.0.0.1:8000/api/projects/1
 ```powershell
 iwr -Uri http://127.0.0.1:8000/api/projects/1 -Method DELETE
 ```
+
+### List Tasks (project id=1)
+
+**_Bash_**
+
+```bash
+curl http://127.0.0.1:8000/api/projects/1/tasks
+```
+
+**_PowerShell_**
+
+```powershell
+iwr http://127.0.0.1:8000/api/projects/1/tasks | Select -Expand Content
+```
+
+### Create Task (project id=1)
+
+**_Bash_**
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/projects/1/tasks -H "Content-Type: application/json" -d '{"title":"First task","description":"Do something important"}'
+```
+
+**_PowerShell_**
+
+```powershell
+iwr -Uri http://127.0.0.1:8000/api/projects/1/tasks -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"title":"First task","description":"Do something important"}'
+```
+
+### Get Task (project id=1, task id=1)
+
+**_Bash_**
+
+```bash
+curl http://127.0.0.1:8000/api/projects/1/tasks/1
+```
+
+**_PowerShell_**
+
+```powershell
+iwr http://127.0.0.1:8000/api/projects/1/tasks/1 | Select -Expand Content
+```
+
+### Update Task (project id=1, task id=1)
+
+**_Bash_**
+
+```bash
+curl -X PUT http://127.0.0.1:8000/api/projects/1/tasks/1 -H "Content-Type: application/json" -d '{"status":"done"}'
+```
+
+**_PowerShell_**
+
+```powershell
+iwr -Uri http://127.0.0.1:8000/api/projects/1/tasks/1 -Method PUT -Headers @{"Content-Type"="application/json"} -Body '{"status":"done"}'
+```
+
+### Delete Task (project id=1, task id=1)
+
+**_Bash_**
+
+```bash
+curl -X DELETE http://127.0.0.1:8000/api/projects/1/tasks/1
+```
+
+**_PowerShell_**
+
+```powershell
+iwr -Uri http://127.0.0.1:8000/api/projects/1/tasks/1 -Method DELETE
+```
