@@ -1,10 +1,15 @@
 from datetime import datetime, date
+
 from todolist.exceptions import ValidationError
 from todolist.core.utils import validate_length
 from todolist.core.constants import (
     VALID_STATUSES,
     ERR_INVALID_STATUS,
     ERR_INVALID_DEADLINE,
+    TASK_TITLE_MIN_LENGTH,
+    TASK_TITLE_MAX_LENGTH,
+    TASK_DESCRIPTION_MIN_LENGTH,
+    TASK_DESCRIPTION_MAX_LENGTH,
 )
 
 
@@ -20,8 +25,18 @@ class Task:
         closed_at: datetime | None = None,
         project_id: str | None = None,
     ):
-        validate_length("Task title", title, 3)
-        validate_length("Task description", description, 10)
+        validate_length(
+            "Task title",
+            title,
+            TASK_TITLE_MIN_LENGTH,
+            TASK_TITLE_MAX_LENGTH,
+        )
+        validate_length(
+            "Task description",
+            description,
+            TASK_DESCRIPTION_MIN_LENGTH,
+            TASK_DESCRIPTION_MAX_LENGTH,
+        )
 
         if status not in VALID_STATUSES:
             raise ValidationError(

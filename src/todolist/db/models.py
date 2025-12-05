@@ -8,13 +8,19 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from todolist.db.base import Base
 
+from todolist.core.constants import (
+    TASK_TITLE_MAX_LENGTH,
+    PROJECT_NAME_MAX_LENGTH,
+    TASK_DESCRIPTION_MAX_LENGTH,
+    PROJECT_DESCRIPTION_MAX_LENGTH,
+)
 
 class ProjectDB(Base):
     __tablename__ = "projects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(String(PROJECT_NAME_MAX_LENGTH), unique=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(PROJECT_DESCRIPTION_MAX_LENGTH), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
@@ -32,8 +38,9 @@ class TaskDB(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    title: Mapped[str] = mapped_column(String(TASK_TITLE_MAX_LENGTH), nullable=False)
+
+    description: Mapped[Optional[str]] = mapped_column(String(TASK_DESCRIPTION_MAX_LENGTH), nullable=True)
 
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="todo")
     deadline: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
