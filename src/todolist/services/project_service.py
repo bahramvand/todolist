@@ -2,9 +2,18 @@ from __future__ import annotations
 
 from todolist.models.project import Project
 from todolist.repositories.project_db import ProjectDBRepository
-from todolist.exceptions import DuplicateError, ValidationError, NotFoundError
+from todolist.exceptions import DuplicateError, ValidationError, NotFoundError, LimitError
 from todolist.core.utils import print_table, validate_length
-from todolist.core.constants import ERR_DUPLICATE_PROJECT, ERR_PROJECT_NOT_EXISTS
+from todolist.core.constants import (
+    ERR_DUPLICATE_PROJECT,
+    ERR_PROJECT_NOT_EXISTS,
+    PROJECT_OF_NUMBER_MAX,
+    ERR_MAX_PROJECTS,
+    PROJECT_NAME_MIN_LENGTH,
+    PROJECT_NAME_MAX_LENGTH,
+    PROJECT_DESCRIPTION_MIN_LENGTH,
+    PROJECT_DESCRIPTION_MAX_LENGTH,
+)
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -16,10 +25,32 @@ class ProjectService:
         self.repo = project_repo
 
     def create_project(self, name: str, description: str):
+        validate_length(
+            "Project name",
+            name,
+            PROJECT_NAME_MIN_LENGTH,
+            PROJECT_NAME_MAX_LENGTH,
+        )
+        validate_length(
+            "Project description",
+            description,
+            PROJECT_DESCRIPTION_MIN_LENGTH,
+            PROJECT_DESCRIPTION_MAX_LENGTH,
+        )
+
+        projects = self.repo.list_all()
+
+        if len(projects) >= PROJECT_OF_NUMBER_MAX:
+            raise LimitError(ERR_MAX_PROJECTS)
+
+        if any(p.name.strip().lower() == name.strip().lower() for p in projects):
+            raise DuplicateError(ERR_DUPLICATE_PROJECT.format(name=name))
+
         project = Project(name, description)
         self.repo.create(project)
         print(f"Project '{project.name}' created successfully.")
         return project
+
 
     def _get_all_projects(self):
         return self.repo.list_all()
@@ -50,8 +81,18 @@ class ProjectService:
 
     def edit_project(self, project_id: str, new_name: str, new_description: str):
         project = self.repo.get_by_id(project_id)
-        validate_length("Project name", new_name, 3)
-        validate_length("Project description", new_description, 10)
+        validate_length(
+            "Project name",
+            new_name,
+            PROJECT_NAME_MIN_LENGTH,
+            PROJECT_NAME_MAX_LENGTH,
+        )
+        validate_length(
+            "Project description",
+            new_description,
+            PROJECT_DESCRIPTION_MIN_LENGTH,
+            PROJECT_DESCRIPTION_MAX_LENGTH,
+        )
 
         # Check duplication
         all_projects = self.repo.list_all()
