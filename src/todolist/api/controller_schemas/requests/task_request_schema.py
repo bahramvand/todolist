@@ -2,19 +2,29 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from todolist.core.constants import (
+    TASK_TITLE_MIN_LENGTH,
+    TASK_TITLE_MAX_LENGTH,
+    TASK_DESCRIPTION_MIN_LENGTH,
+    TASK_DESCRIPTION_MAX_LENGTH,
+)
+
+
 
 class TaskCreateRequest(BaseModel):
     title: str = Field(
         ...,
-        min_length=3,
-        max_length=255,
-        description="Task title (at least 3 characters).",
+        min_length=TASK_TITLE_MIN_LENGTH,
+        max_length=TASK_TITLE_MAX_LENGTH,
+        description="Task title.",
         examples=["Buy milk"],
     )
     description: Optional[str] = Field(
         None,
+        min_length=TASK_DESCRIPTION_MIN_LENGTH,
+        max_length=TASK_DESCRIPTION_MAX_LENGTH,
         description="Optional task description.",
-        examples=["Buy 2 liters of milk from the store."],
+        examples=["Buy 2L of milk from the supermarket."],
     )
     deadline: Optional[str] = Field(
         None,
@@ -24,16 +34,19 @@ class TaskCreateRequest(BaseModel):
 
 
 class TaskUpdateRequest(BaseModel):
-    title: Optional[str] = Field(
-        None,
-        min_length=3,
-        max_length=255,
-        description="New task title (optional).",
-        examples=["Buy bread instead of milk"],
+    title: str = Field(
+        ...,
+        min_length=TASK_TITLE_MIN_LENGTH,
+        max_length=TASK_TITLE_MAX_LENGTH,
+        description="Task title.",
+        examples=["Buy milk"],
     )
     description: Optional[str] = Field(
         None,
-        description="New task description (optional).",
+        min_length=TASK_DESCRIPTION_MIN_LENGTH,
+        max_length=TASK_DESCRIPTION_MAX_LENGTH,
+        description="Optional task description.",
+        examples=["Buy 2L of milk from the supermarket."],
     )
     deadline: Optional[str] = Field(
         None,
